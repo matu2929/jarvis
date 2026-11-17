@@ -1,14 +1,15 @@
 // Checks that jarvis-kit is fully installed for Claude Code.
 // The plugin can be installed on its own (e.g. `claude plugin install`), which skips scripts/install.mjs,
 // so the session-start hook and the installer both use this to report what is missing.
+// Every MCP server in core/mcp-servers.json is required: a missing one breaks the setup.
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 const REPO_URL = "https://github.com/matu2929/jarvis-kit";
-const ENGRAM_URL = "https://github.com/Gentleman-Programming/engram";
-const REGISTER_ENGRAM = "claude mcp add --scope user engram -- engram mcp";
+const REGISTRY = resolve(dirname(fileURLToPath(import.meta.url)), "../../core/mcp-servers.json");
 const AGENTS_IMPORT = /^@((?:\\ |\S)*core\/AGENTS\.md)\s*$/m;
 
 const readJson = (path) => {
@@ -26,33 +27,43 @@ function defaultWhich(bin) {
   return spawnSync(finder, [bin], { stdio: "ignore" }).status === 0;
 }
 
-function engramServers(claudeJson, cwd) {
+export const registerCommand = (name, server) =>
+  `claude mcp add --scope user ${name} -- ${[server.command, ...(server.args ?? [])].join(" ")}`;
+
+function registeredServers(claudeJson, cwd) {
   const config = readJson(claudeJson);
   const project = Object.entries(config.projects ?? {}).find(([key]) => normalize(key) === normalize(cwd))?.[1];
-  const servers = { ...config.mcpServers, ...project?.mcpServers, ...readJson(join(cwd, ".mcp.json")).mcpServers };
-  return Object.entries(servers).filter(([name]) => /engram/i.test(name)).map(([, server]) => server);
+  return { ...config.mcpServers, ...project?.mcpServers, ...readJson(join(cwd, ".mcp.json")).mcpServers };
 }
 
 export function collectFacts({
   claudeDir = process.env.CLAUDE_CONFIG_DIR || join(homedir(), ".claude"),
   claudeJson = process.env.CLAUDE_CONFIG_DIR ? join(process.env.CLAUDE_CONFIG_DIR, ".claude.json") : join(homedir(), ".claude.json"),
   cwd = process.cwd(),
+  registry = readJson(REGISTRY),
   which = defaultWhich,
 } = {}) {
   const match = AGENTS_IMPORT.exec(readText(join(claudeDir, "CLAUDE.md")));
   const importPath = match ? match[1].replace(/\\ /g, " ") : null;
-  const servers = engramServers(claudeJson, cwd);
-  const registeredBinaryExists = servers.some((s) => typeof s.command === "string" && /[\\/]/.test(s.command) && existsSync(s.command));
+  const registered = registeredServers(claudeJson, cwd);
 
-  return {
-    importPath,
-    importTargetExists: Boolean(importPath) && existsSync(importPath),
-    engramInstalled: which("engram") || registeredBinaryExists,
-    engramRegistered: servers.length > 0,
-  };
+  const mcp = Object.entries(registry.servers ?? {}).map(([name, server]) => {
+    const entry = registered[name];
+    // A registration with an absolute command path proves the binary even when it is not on PATH.
+    const registeredBinary = typeof entry?.command === "string" && /[\\/]/.test(entry.command) && existsSync(entry.command);
+    return {
+      name,
+      installed: which(server.command) || registeredBinary,
+      registered: Boolean(entry),
+      install: server.install,
+      register: registerCommand(name, server),
+    };
+  });
+
+  return { importPath, importTargetExists: Boolean(importPath) && existsSync(importPath), mcp };
 }
 
-export function diagnose({ importPath, importTargetExists, engramInstalled, engramRegistered }) {
+export function diagnose({ importPath, importTargetExists, mcp = [] }) {
   const problems = [];
   if (!importPath) {
     problems.push({
@@ -67,18 +78,20 @@ export function diagnose({ importPath, importTargetExists, engramInstalled, engr
       fix: "Run `node scripts/install.mjs` from the current jarvis-kit clone.",
     });
   }
-  if (!engramInstalled) {
-    problems.push({
-      id: "engram-missing",
-      message: "Engram is not installed, so persistent memory is off.",
-      fix: `Install Engram (${ENGRAM_URL}), then run \`${REGISTER_ENGRAM}\`.`,
-    });
-  } else if (!engramRegistered) {
-    problems.push({
-      id: "engram-unregistered",
-      message: "Engram is installed but not registered as an MCP server, so persistent memory is off.",
-      fix: `Run \`${REGISTER_ENGRAM}\`.`,
-    });
+  for (const server of mcp) {
+    if (!server.installed) {
+      problems.push({
+        id: `mcp-missing:${server.name}`,
+        message: `The required MCP server "${server.name}" is not installed.`,
+        fix: `Install it (${server.install}), then run \`${server.register}\`.`,
+      });
+    } else if (!server.registered) {
+      problems.push({
+        id: `mcp-unregistered:${server.name}`,
+        message: `The required MCP server "${server.name}" is installed but not registered.`,
+        fix: `Run \`${server.register}\`.`,
+      });
+    }
   }
   return problems;
 }
@@ -86,5 +99,9 @@ export function diagnose({ importPath, importTargetExists, engramInstalled, engr
 export function formatReport(problems) {
   if (!problems.length) return "";
   const lines = problems.map((p) => `- ${p.message} Fix: ${p.fix}`);
-  return `jarvis-kit setup is incomplete. Tell the user briefly at the start of your first reply:\n${lines.join("\n")}`;
+  return (
+    "jarvis-kit setup is broken. Before anything else, tell the user what is missing and how to fix it, " +
+    "and do not start the requested task until it is fixed or the user explicitly says to continue without it:\n" +
+    lines.join("\n")
+  );
 }

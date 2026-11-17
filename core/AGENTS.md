@@ -50,9 +50,13 @@ A change is high risk when it touches:
 
 High-risk changes always get an independent review, plus a security audit when item 2 applies.
 
+## Required MCP servers
+
+The MCP servers listed in the kit's `core/mcp-servers.json` are required, never optional. If one of their tools is missing, stop, tell the user the setup is broken and how to fix it, and do not continue the task until it is fixed or the user explicitly says to continue without it.
+
 ## Memory
 
-When the Engram MCP is available:
+Engram is the kit's persistent memory:
 
 - Call `mem_current_project` before the first `mem_context` / `mem_search`, and use the project it returns.
 - Call `mem_save` after decisions, bugfixes, discoveries, conventions, or config changes.

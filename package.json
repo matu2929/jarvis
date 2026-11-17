@@ -1,6 +1,6 @@
 {
   "name": "jarvis-kit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Personal engineering harness for AI coding agents.",
   "type": "module",

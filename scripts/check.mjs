@@ -53,12 +53,47 @@ function checkSkills() {
   }
 }
 
+// Every MCP server in core/mcp-servers.json is required. Agents with a `tools` allowlist only see an MCP
+// server's tools when they list `mcp__<server>__*`, so the registry names the agents that need each server.
+export function checkMcpServers(registry, agents) {
+  const problems = [];
+  const servers = registry.servers ?? {};
+  const byName = new Map(agents.map((a) => [a.name, a]));
+
+  for (const [name, server] of Object.entries(servers)) {
+    const where = `core/mcp-servers.json (${name})`;
+    if (!server.purpose || !server.install || !server.command || !Array.isArray(server.args)) {
+      problems.push(`${where}: purpose, install, command and args are required`);
+    }
+    for (const agentName of server.agents ?? []) {
+      const agent = byName.get(agentName);
+      if (!agent) problems.push(`${where}: unknown agent "${agentName}"`);
+      else if (!agent.tools.includes(`mcp__${name}__*`)) {
+        problems.push(`agent ${agentName}: needs "mcp__${name}__*" in its tools (listed in core/mcp-servers.json)`);
+      }
+    }
+  }
+  for (const agent of agents) {
+    for (const tool of agent.tools) {
+      const match = /^mcp__(.+)__\*$/.exec(tool) ?? /^mcp__([^_]+(?:_[^_]+)*)__/.exec(tool);
+      if (!match) continue;
+      const server = match[1];
+      if (!servers[server]) problems.push(`agent ${agent.name}: uses MCP server "${server}", which is not registered in core/mcp-servers.json`);
+      else if (!(servers[server].agents ?? []).includes(agent.name)) {
+        problems.push(`agent ${agent.name}: uses "${server}" but is not listed in the "${server}" agents of core/mcp-servers.json`);
+      }
+    }
+  }
+  return problems;
+}
+
 function checkPlugin() {
   const manifest = JSON.parse(readFileSync(join(ROOT, ".claude-plugin", "plugin.json"), "utf8"));
   const paths = [...[manifest.skills].flat(), ...[manifest.agents].flat(), ...[manifest.hooks].flat()].filter(Boolean);
   for (const path of paths) {
     if (!existsSync(join(ROOT, path))) fail("plugin.json", `path not found: ${path}`);
   }
+  const agents = [];
   for (const path of [manifest.agents].flat()) {
     const fm = parseFrontmatter(readFileSync(join(ROOT, path), "utf8"));
     const expected = basename(path, ".md");
@@ -66,8 +101,11 @@ function checkPlugin() {
     else {
       if (fm.name !== expected) fail(path, `name "${fm.name}" must match the file name`);
       if (!fm.description) fail(path, "description is required");
+      agents.push({ name: fm.name, tools: String(fm.tools ?? "").split(",").map((t) => t.trim()).filter(Boolean) });
     }
   }
+  const registry = JSON.parse(readFileSync(join(ROOT, "core", "mcp-servers.json"), "utf8"));
+  for (const problem of checkMcpServers(registry, agents)) errors.push(problem);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

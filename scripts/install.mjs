@@ -1,7 +1,8 @@
 // Installs jarvis-kit for Claude Code:
 //   1. Imports core/AGENTS.md from the user-level CLAUDE.md (plugins cannot load always-on instructions).
 //   2. Registers this repo as a plugin marketplace and installs the `jarvis` plugin.
-//   3. Checks requirements: git, and the doctor checks (instructions import, Engram installed and registered).
+//   3. Checks requirements: git, and the doctor checks (instructions import, every required MCP server in
+//      core/mcp-servers.json installed and registered). Exits with code 1 when the setup is broken.
 //
 // Usage: node scripts/install.mjs [--uninstall] [--dry-run] [--skip-plugin] [--claude-dir <path>]
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -79,8 +80,9 @@ function checkRequirements({ claudeDir, dryRun }) {
 
   // A dry run did not write the import yet, so only report the optional pieces.
   const problems = diagnose(collectFacts({ claudeDir })).filter((p) => !(dryRun && p.id.startsWith("instructions")));
-  for (const problem of problems) console.log(`doctor: ${problem.message}\n        Fix: ${problem.fix}`);
-  if (!problems.length) console.log("doctor: setup complete");
+  for (const problem of problems) console.error(`doctor: ERROR ${problem.message}\n        Fix: ${problem.fix}`);
+  if (problems.length) process.exitCode = 1;
+  else console.log("doctor: setup complete");
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

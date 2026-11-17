@@ -1,0 +1,11 @@
+{
+  "servers": {
+    "engram": {
+      "purpose": "Persistent memory across sessions: decisions, conventions, bugfixes, discoveries.",
+      "install": "https://github.com/Gentleman-Programming/engram",
+      "command": "engram",
+      "args": ["mcp"],
+      "agents": ["implementer"]
+    }
+  }
+}
