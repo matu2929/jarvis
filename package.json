@@ -5,7 +5,7 @@
   "description": "Personal engineering harness for AI coding agents.",
   "type": "module",
   "scripts": {
-    "test": "node --test \"core/scripts/*.test.mjs\" \"adapters/claude/hooks/*.test.mjs\" \"scripts/*.test.mjs\"",
+    "test": "node --test \"core/scripts/*.test.mjs\" \"adapters/claude/*.test.mjs\" \"adapters/claude/hooks/*.test.mjs\" \"scripts/*.test.mjs\"",
     "check": "node scripts/check.mjs && claude plugin validate .",
     "install-kit": "node scripts/install.mjs"
   },

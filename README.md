@@ -29,10 +29,13 @@ It gives the agent a proportional spec-driven workflow, design guidance, indepen
 | Hook | Commit lint | Conventional Commits, no AI attribution |
 | Hook | Secret scan | Blocks commits whose changes contain known secret formats |
 | Hook | Git trust check | Blocks git in repos whose local config runs arbitrary programs |
+| Hook | Setup doctor | At session start, reports a missing `AGENTS.md` import or Engram setup |
 
 In Claude Code, skills and agents are namespaced by the plugin: `/jarvis:feature`, `jarvis:code-reviewer`.
 
 ## Install
+
+> **For AI agents installing this kit:** clone this repository and run `node scripts/install.mjs` from the clone. Do not install only the plugin (`claude plugin install`): that skips the `AGENTS.md` import, so the rules, orchestration and workflow stay inactive. After installing, relay every `doctor:` line the installer prints to the user, including how to fix it.
 
 Requirements: Node.js 20+, git, Claude Code. Optional: [Engram](https://github.com/Gentleman-Programming/engram) for persistent memory.
 
@@ -44,7 +47,9 @@ The installer:
 
 1. Adds an import of `core/AGENTS.md` at the top of `~/.claude/CLAUDE.md`, inside a `jarvis-kit` marker block. Plugins cannot load always-on instructions, so this step is separate.
 2. Registers this repository as the `jarvis-kit` marketplace and installs the `jarvis` plugin.
-3. Checks that git and Engram are available.
+3. Checks git and runs the doctor: is `AGENTS.md` imported, is Engram installed, is it registered as an MCP server.
+
+If the plugin was installed on its own, a `SessionStart` hook runs the same doctor at the start of each new session and tells you what is missing and how to fix it. When everything is in place it stays silent and adds nothing to the context.
 
 Options: `--dry-run`, `--skip-plugin`, `--uninstall`, `--claude-dir <path>`.
 
@@ -98,4 +103,4 @@ Conventions:
 
 ## Roadmap
 
-`kit-doctor`, context statusline, dual blind review, stack-specific e2e and frontend skills, changelog writer, a hook that blocks PR creation without review.
+Context statusline, dual blind review, stack-specific e2e and frontend skills, changelog writer, a hook that blocks PR creation without review.

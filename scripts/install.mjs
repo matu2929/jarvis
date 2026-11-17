@@ -1,7 +1,7 @@
 // Installs jarvis-kit for Claude Code:
 //   1. Imports core/AGENTS.md from the user-level CLAUDE.md (plugins cannot load always-on instructions).
 //   2. Registers this repo as a plugin marketplace and installs the `jarvis` plugin.
-//   3. Checks requirements (git, engram).
+//   3. Checks requirements: git, and the doctor checks (instructions import, Engram installed and registered).
 //
 // Usage: node scripts/install.mjs [--uninstall] [--dry-run] [--skip-plugin] [--claude-dir <path>]
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -9,6 +9,7 @@ import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { collectFacts, diagnose } from "../adapters/claude/doctor.mjs";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const MARKETPLACE = "jarvis-kit";
@@ -71,20 +72,20 @@ function updatePlugin({ uninstall, dryRun }) {
   }
 }
 
-function checkRequirements() {
+function checkRequirements({ claudeDir, dryRun }) {
   const finder = process.platform === "win32" ? "where" : "which";
-  for (const [bin, why] of [
-    ["git", "required by the git hooks"],
-    ["engram", "optional, persistent memory MCP; install it and run `claude mcp add --scope user engram -- engram mcp`"],
-  ]) {
-    const found = spawnSync(finder, [bin], { stdio: "ignore" }).status === 0;
-    console.log(`requirement: ${bin} ${found ? "found" : `NOT FOUND (${why})`}`);
-  }
+  const gitFound = spawnSync(finder, ["git"], { stdio: "ignore" }).status === 0;
+  console.log(`requirement: git ${gitFound ? "found" : "NOT FOUND (required by the git hooks)"}`);
+
+  // A dry run did not write the import yet, so only report the optional pieces.
+  const problems = diagnose(collectFacts({ claudeDir })).filter((p) => !(dryRun && p.id.startsWith("instructions")));
+  for (const problem of problems) console.log(`doctor: ${problem.message}\n        Fix: ${problem.fix}`);
+  if (!problems.length) console.log("doctor: setup complete");
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const options = parseArgs(process.argv.slice(2));
   updateInstructions(options);
   if (!options.skipPlugin) updatePlugin(options);
-  if (!options.uninstall) checkRequirements();
+  if (!options.uninstall) checkRequirements(options);
 }
