@@ -11,6 +11,8 @@ Spec-driven, proportional to size. The spec is the contract: the implementer bui
 
 ## 1. Understand
 
+- If the folder has no application code and no `specs/`, suggest the `kickoff` skill to define the project first.
+- If `specs/product.md` has open questions that block the roadmap item being built, resolve them with the user first.
 - Explore the relevant code before proposing anything. Follow the existing patterns of the project.
 - Check the current documentation of the libraries and frameworks involved with Context7, for the versions the project uses.
 - If a real product decision is open, ask ONE focused question and stop.
@@ -35,6 +37,7 @@ Rules:
 
 - Requirements quote the user's exact words, error messages, and examples verbatim. Never paraphrase, never add requirements the user did not ask for. Mark assumptions as assumptions.
 - `L1` in the log is the user's original request, verbatim.
+- If `specs/roadmap.md` exists and the change implements one of its items, fill `Roadmap:` with its ID. Once implementation starts, set that item to `in-progress` with a link to the spec. A small change (no spec) that completes a roadmap item sets it to `done` directly.
 - A requirement change appends a verbatim log entry, rewrites only the affected `S#`, and reopens only its task.
 - Large: show the spec and get explicit approval before step 4. Medium: share it and continue.
 
@@ -44,6 +47,7 @@ Rules:
 Objective: <one line> (M)
 Status: draft | approved | in-progress | done
 Branch: <branch>
+Roadmap: <F# from specs/roadmap.md, or omit>
 
 ## Specs (M)
 - S1: <requirement, user wording verbatim>
@@ -83,6 +87,6 @@ Use the `plan-tests` skill. Turn each acceptance criterion into a failing test (
 ## 7. Close
 
 - Verify every `S#` has evidence. Run the full test suite once.
-- Set the spec status to `done` and append the final log entry.
+- Set the spec status to `done` and append the final log entry. If the spec has a `Roadmap:` ID, set that item to `done` in `specs/roadmap.md`.
 - Report: what was done, checks run with their results, anything skipped or pending, and the risk line: `Risk: item N (reason)` or `Risk: none`.
 - Commit only when the user asks.

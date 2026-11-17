@@ -16,6 +16,7 @@ It gives the agent a proportional spec-driven workflow, design guidance, indepen
 | Type | Name | Purpose |
 |---|---|---|
 | Instructions | `core/AGENTS.md` | Rules, orchestration, workflow, high-risk list, memory |
+| Skill | `kickoff` | Guided definition of a new project: product → scope → architecture → conventions, specs in the repo, then a walking skeleton |
 | Skill | `feature` | Size → spec → approval (large) → tests → implement → review → close |
 | Skill | `design-patterns` | Structure and patterns before code, justified by real smells |
 | Skill | `review-code` | Four-lens review against the spec, with file:line evidence |
