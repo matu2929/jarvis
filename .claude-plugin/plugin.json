@@ -1,7 +1,6 @@
 {
   "name": "jarvis",
   "displayName": "Jarvis",
-  "version": "0.4.0",
   "description": "Personal engineering harness: project kickoff, spec-driven workflow, design patterns, code review, security audit, debugging, test planning, and safety hooks.",
   "author": {
     "name": "Matias Masco"

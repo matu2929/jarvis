@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { diagnose, collectFacts, formatReport, registerCommand } from "./doctor.mjs";
 
 const engram = { name: "engram", installed: true, registered: true, install: "https://example.com/engram", register: "claude mcp add --scope user engram -- engram mcp" };
@@ -23,6 +23,9 @@ test("reports a missing AGENTS.md import with the install command", () => {
 
 test("reports an import that points to a missing file", () => {
   assert.deepEqual(ids({ ...healthy, importTargetExists: false }), ["instructions-broken"]);
+  const [problem] = diagnose({ ...healthy, importTargetExists: false });
+  assert.doesNotMatch(problem.fix, /current jarvis clone/, "the import no longer depends on a clone staying in place");
+  assert.match(problem.fix, /node scripts\/install\.mjs/);
 });
 
 test("reports a required MCP server not installed, or installed but not registered", () => {
@@ -76,6 +79,19 @@ test("collects facts from the Claude config files and the registry", () => {
 
     const facts = collectFacts({ claudeDir, claudeJson, cwd: dir, registry, which: () => true });
     assert.deepEqual(facts, { ...healthy, importPath: join(kit, "AGENTS.md").replace(/\\/g, "/") });
+
+    // The installed copy lives under <claude-dir>/jarvis/, independent of the clone.
+    const copy = join(claudeDir, "jarvis", "AGENTS.md");
+    mkdirSync(dirname(copy));
+    writeFileSync(copy, "# rules\n");
+    const copyImport = `@${copy.replace(/\\/g, "/").replace(/ /g, "\\ ")}`;
+    writeFileSync(join(claudeDir, "CLAUDE.md"), `<!-- jarvis:start -->\n${copyImport}\n<!-- jarvis:end -->\n`);
+    const copied = collectFacts({ claudeDir, claudeJson, cwd: dir, registry, which: () => true });
+    assert.deepEqual(copied, { ...healthy, importPath: copy.replace(/\\/g, "/") });
+
+    // An AGENTS.md import outside the installer's block is not the kit's.
+    writeFileSync(join(claudeDir, "CLAUDE.md"), `${copyImport}\n`);
+    assert.equal(collectFacts({ claudeDir, claudeJson, cwd: dir, registry, which: () => true }).importPath, null);
 
     writeFileSync(join(claudeDir, "CLAUDE.md"), "# nothing\n");
     writeFileSync(claudeJson, "{}");

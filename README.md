@@ -53,8 +53,8 @@ node scripts/install.mjs
 
 The installer:
 
-1. Adds an import of `core/AGENTS.md` at the top of `~/.claude/CLAUDE.md`, inside a `jarvis` marker block. Plugins cannot load always-on instructions, so this step is separate.
-2. Registers this repository as the `jarvis` marketplace and installs the `jarvis` plugin.
+1. Adds `matu2929/jarvis` on GitHub as the `jarvis` marketplace, installs the `jarvis` plugin, and updates both to the latest pushed commit. A `jarvis` marketplace added from a local path by an older install is replaced. If this step fails, the installer stops and changes nothing else.
+2. Copies the installed plugin's `core/AGENTS.md` to `~/.claude/jarvis/AGENTS.md` and imports that copy at the top of `~/.claude/CLAUDE.md`, inside a `jarvis` marker block. Plugins cannot load always-on instructions, so this step is separate. The copy comes from the published plugin, so the rules always match it; if this clone's `core/AGENTS.md` differs (not pushed yet, or out of date), the installer warns.
 3. Checks git and runs the doctor: is `AGENTS.md` imported, is every required MCP server installed and registered. It exits with code 1 when something is missing.
 
 A `SessionStart` hook runs the same doctor at the start of each new session, so a partial install (for example, only the plugin) is reported too: the agent tells you what is missing and how to fix it, and does not start working until it is fixed or you explicitly say to continue. When everything is in place it stays silent and adds nothing to the context.
@@ -67,7 +67,11 @@ Local MCP servers cannot be bundled, because plugins cannot install binaries. In
 claude mcp add --scope user engram -- engram mcp
 ```
 
-Installed from a local path, the plugin loads in place from this repository: edits apply on the next session, or after `/reload-plugins`. Changes to `core/AGENTS.md` also apply on the next session without reinstalling.
+Nothing installed depends on the clone, so you can move or delete it. To update after changing the kit:
+
+1. Commit and push to GitHub. The plugin has no pinned `version`, so every pushed commit counts as an update.
+2. Run `node scripts/install.mjs` from any clone. It updates the plugin and refreshes the `AGENTS.md` copy from it.
+3. Start a new session.
 
 ## Layout
 

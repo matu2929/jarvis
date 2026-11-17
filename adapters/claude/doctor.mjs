@@ -10,7 +10,10 @@ import { fileURLToPath } from "node:url";
 
 const REPO_URL = "https://github.com/matu2929/jarvis";
 const REGISTRY = resolve(dirname(fileURLToPath(import.meta.url)), "../../core/mcp-servers.json");
-const AGENTS_IMPORT = /^@((?:\\ |\S)*core\/AGENTS\.md)\s*$/m;
+// Same marker block as scripts/install.mjs, including the pre-rename jarvis-kit markers.
+const BLOCK = /<!-- jarvis(?:-kit)?:start -->[\s\S]*?<!-- jarvis(?:-kit)?:end -->/;
+// The installer imports its copy at <claude-dir>/jarvis/AGENTS.md; older installs imported the clone's core/AGENTS.md.
+const AGENTS_IMPORT = /^@((?:\\ |\S)*(?:core|jarvis)\/AGENTS\.md)\s*$/m;
 
 const readJson = (path) => {
   try {
@@ -45,7 +48,9 @@ export function collectFacts({
   registry = readJson(REGISTRY),
   which = defaultWhich,
 } = {}) {
-  const match = AGENTS_IMPORT.exec(readText(join(claudeDir, "CLAUDE.md")));
+  // Only the installer's marker block counts, so another AGENTS.md import elsewhere is not mistaken for it.
+  const block = BLOCK.exec(readText(join(claudeDir, "CLAUDE.md")))?.[0] ?? "";
+  const match = AGENTS_IMPORT.exec(block);
   const importPath = match ? match[1].replace(/\\ /g, " ") : null;
   const registered = registeredServers(claudeJson, cwd);
 
@@ -74,14 +79,14 @@ export function diagnose({ importPath, importTargetExists, mcp = [] }) {
   if (!importPath) {
     problems.push({
       id: "instructions-missing",
-      message: "core/AGENTS.md is not imported in the user CLAUDE.md, so the kit's rules, orchestration and workflow are not active (only the plugin is installed).",
+      message: "The jarvis AGENTS.md is not imported in the user CLAUDE.md, so the kit's rules, orchestration and workflow are not active (only the plugin is installed).",
       fix: `Clone ${REPO_URL} and run \`node scripts/install.mjs\` from the clone.`,
     });
   } else if (!importTargetExists) {
     problems.push({
       id: "instructions-broken",
-      message: `The user CLAUDE.md imports ${importPath}, which does not exist (the clone was moved or deleted).`,
-      fix: "Run `node scripts/install.mjs` from the current jarvis clone.",
+      message: `The user CLAUDE.md imports ${importPath}, which does not exist.`,
+      fix: `Clone ${REPO_URL} (or use an existing clone) and run \`node scripts/install.mjs\` from it.`,
     });
   }
   for (const server of mcp) {
