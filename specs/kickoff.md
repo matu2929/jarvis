@@ -1,7 +1,7 @@
 # Kickoff skill: guided definition of a new project
 
 Objective: a `kickoff` skill that proactively guides the user from an idea to a defined project (product, scope, architecture, conventions) with best practices, before any code is written, and then hands off to `feature`.
-Status: in-progress
+Status: done
 Branch: feat/kickoff-skill
 
 ## Specs
@@ -62,7 +62,7 @@ Branch: feat/kickoff-skill
 | T1 | S1, S4, S5, S6 | inline | done | `core/skills/kickoff/SKILL.md`; CLAUDE.md behavior verified against Claude Code docs |
 | T2 | S2, S3 | inline | done | `core/skills/kickoff/templates/` (4 files) |
 | T3 | S7 | inline | done | `core/skills/feature/SKILL.md` roadmap link |
-| T4 | all | inline | in-progress | `npm test` 63/63, `npm run check` passed. Manual dry run pending: needs the user in a live session |
+| T4 | all | inline | done | `npm test` 63/63, `npm run check` passed. Partial dry run (L5): trigger, entry check, opening and first question match S1; S2-S7 not exercised live, accepted by the user |
 | T5 | all | delegated (code-reviewer) | done | Round 1: 1 blocker, 3 major, minors, all fixed. Recheck: 4 resolved; 1 new blocker (opening question count) fixed with the reviewer's suggested wording, plus 3 new minors fixed |
 
 - T1: `SKILL.md` — entry check, opening, question protocol, stages, resume, close. Verify the CLAUDE.md assumption with docs.
@@ -77,3 +77,5 @@ Branch: feat/kickoff-skill
 - L2 (2026-11-17): Option 2 chosen (own `kickoff` skill). Roadmap one line per feature; detail deferred to `feature`; architecture-impacting features explored during kickoff.
 - L3 (2026-11-17): "las specs quiero que queden en el repo" / "me interesa profundizar en como seria la experiencia del usuario al hacer el kickoff". Five-stage flow with checkpoints agreed.
 - L4 (2026-11-17): "Me gustaria agregar que la IA no asuma nada y que este la posibilidad en las propuestas de respuesta que le da al usuario que una opcion sea texto libre para seguir debatiendo por si no tiene le conocimiento necesario el usuario."
+- L5 (2026-11-17): Dry run in an empty folder stopped after the first question; trigger, entry check and opening behaved as specified.
+- L6 (2026-11-17): "No voy a probar todo, hace el push si falta y dalo por cerrado. Cuando cree un proyecto si detecto algo pido para corregirlo"
