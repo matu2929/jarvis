@@ -39,7 +39,12 @@ In Claude Code, skills and agents are namespaced by the plugin: `/jarvis:feature
 
 > **For AI agents installing this kit:** clone this repository and run `node scripts/install.mjs` from the clone. Do not install only the plugin (`claude plugin install`): that skips the `AGENTS.md` import, so the rules, orchestration and workflow stay inactive. After installing, relay every `doctor:` line the installer prints to the user, including how to fix it.
 
-Requirements: Node.js 20+, git, Claude Code, and every MCP server in `core/mcp-servers.json`, currently [Engram](https://github.com/Gentleman-Programming/engram) for persistent memory. MCP servers are required, not optional: without them the setup is reported as broken.
+Requirements: Node.js 20+, git, Claude Code, and every MCP server in `core/mcp-servers.json`. MCP servers are required, not optional: without them the setup is reported as broken.
+
+| MCP server | Purpose | Setup |
+|---|---|---|
+| [Engram](https://github.com/Gentleman-Programming/engram) | Persistent memory | Install the binary and register it (see below) |
+| [Context7](https://context7.com) | Current library and framework docs | Bundled in the plugin as a remote server. Sign in once: run `/mcp`, select `plugin:jarvis:context7`, and authenticate |
 
 ```bash
 node scripts/install.mjs
@@ -55,7 +60,7 @@ A `SessionStart` hook runs the same doctor at the start of each new session, so 
 
 Options: `--dry-run`, `--skip-plugin`, `--uninstall`, `--claude-dir <path>`.
 
-MCP servers are not bundled: plugins cannot install binaries. Install Engram, then register it once with:
+Local MCP servers cannot be bundled, because plugins cannot install binaries. Install Engram, then register it once with:
 
 ```bash
 claude mcp add --scope user engram -- engram mcp
@@ -75,6 +80,7 @@ core/
 adapters/claude/
   agents/              Claude Code subagents
   hooks/               hook wiring that calls core/scripts
+  mcp.json             MCP servers bundled with the plugin (remote http)
 scripts/               install and kit lint
 ```
 
@@ -102,7 +108,7 @@ Conventions:
 
 - Artifacts are in English. Skill names are kebab-case, match their directory, carry `metadata.kit: jarvis`, and never reuse a Claude Code built-in skill name. `scripts/check.mjs` enforces this.
 - Hook logic goes in `core/scripts/` with tests; adapters only parse the tool's input and call it.
-- MCP servers are registered in `core/mcp-servers.json`. An agent that needs one lists `mcp__<server>__*` in its `tools` and is named in the registry; `scripts/check.mjs` fails when they disagree.
+- MCP servers are registered in `core/mcp-servers.json`. An agent that needs one lists its tools (`mcp__<server>__*`, or `mcp__plugin_jarvis_<server>__*` when bundled) and is named in the registry; `scripts/check.mjs` fails when they disagree.
 - To add or change anything in the kit, use the `extend-kit` skill (`/jarvis:extend-kit`).
 - Secret-scan false positives: add `jarvis:allow-secret` to the line. Git trust check bypass: `JARVIS_SKIP_GIT_TRUST=1`.
 

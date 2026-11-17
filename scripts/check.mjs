@@ -54,31 +54,43 @@ function checkSkills() {
 }
 
 // Every MCP server in core/mcp-servers.json is required. Agents with a `tools` allowlist only see an MCP
-// server's tools when they list `mcp__<server>__*`, so the registry names the agents that need each server.
-export function checkMcpServers(registry, agents) {
+// server's tools when they list them, so the registry names the agents that need each server.
+// Bundled servers ship in the plugin's MCP config, and Claude Code prefixes their tools with the plugin name.
+export const toolWildcard = (name, server, plugin = "jarvis") =>
+  server.bundled ? `mcp__plugin_${plugin}_${name}__*` : `mcp__${name}__*`;
+
+export function checkMcpServers(registry, agents, { bundled = {}, plugin = "jarvis" } = {}) {
   const problems = [];
   const servers = registry.servers ?? {};
   const byName = new Map(agents.map((a) => [a.name, a]));
 
   for (const [name, server] of Object.entries(servers)) {
     const where = `core/mcp-servers.json (${name})`;
-    if (!server.purpose || !server.install || !server.command || !Array.isArray(server.args)) {
-      problems.push(`${where}: purpose, install, command and args are required`);
+    if (!server.purpose) problems.push(`${where}: purpose is required`);
+    if (server.type === "http") {
+      if (!server.url) problems.push(`${where}: url is required for http servers`);
+    } else if (!server.install || !server.command || !Array.isArray(server.args)) {
+      problems.push(`${where}: install, command and args are required for stdio servers`);
     }
+    if (server.bundled) {
+      if (!bundled[name]) problems.push(`${where}: bundled but not declared in adapters/claude/mcp.json`);
+      else if (bundled[name].url !== server.url) problems.push(`${where}: url does not match adapters/claude/mcp.json`);
+    }
+    const wildcard = toolWildcard(name, server, plugin);
     for (const agentName of server.agents ?? []) {
       const agent = byName.get(agentName);
       if (!agent) problems.push(`${where}: unknown agent "${agentName}"`);
-      else if (!agent.tools.includes(`mcp__${name}__*`)) {
-        problems.push(`agent ${agentName}: needs "mcp__${name}__*" in its tools (listed in core/mcp-servers.json)`);
+      else if (!agent.tools.includes(wildcard)) {
+        problems.push(`agent ${agentName}: needs "${wildcard}" in its tools (listed in core/mcp-servers.json)`);
       }
     }
   }
+
+  const wildcards = new Map(Object.entries(servers).map(([name, server]) => [toolWildcard(name, server, plugin), name]));
   for (const agent of agents) {
-    for (const tool of agent.tools) {
-      const match = /^mcp__(.+)__\*$/.exec(tool) ?? /^mcp__([^_]+(?:_[^_]+)*)__/.exec(tool);
-      if (!match) continue;
-      const server = match[1];
-      if (!servers[server]) problems.push(`agent ${agent.name}: uses MCP server "${server}", which is not registered in core/mcp-servers.json`);
+    for (const tool of agent.tools.filter((t) => t.startsWith("mcp__"))) {
+      const server = wildcards.get(tool);
+      if (!server) problems.push(`agent ${agent.name}: uses "${tool}", which matches no server in core/mcp-servers.json`);
       else if (!(servers[server].agents ?? []).includes(agent.name)) {
         problems.push(`agent ${agent.name}: uses "${server}" but is not listed in the "${server}" agents of core/mcp-servers.json`);
       }
@@ -105,7 +117,9 @@ function checkPlugin() {
     }
   }
   const registry = JSON.parse(readFileSync(join(ROOT, "core", "mcp-servers.json"), "utf8"));
-  for (const problem of checkMcpServers(registry, agents)) errors.push(problem);
+  const bundledFile = join(ROOT, "adapters", "claude", "mcp.json");
+  const bundled = existsSync(bundledFile) ? JSON.parse(readFileSync(bundledFile, "utf8")).mcpServers ?? {} : {};
+  for (const problem of checkMcpServers(registry, agents, { bundled, plugin: manifest.name })) errors.push(problem);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

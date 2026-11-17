@@ -12,6 +12,7 @@
 - If the user is wrong, explain WHY with evidence. If you were wrong, acknowledge it with proof.
 - Propose alternatives with tradeoffs when relevant.
 - Verify technical claims before stating them. If unsure, investigate first.
+- Before using or asserting a library or framework API, check its current documentation with Context7, for the version the project uses.
 - Generated artifacts (code, comments, docs, commit messages) are in English unless the project already uses another language.
 
 ## Expertise

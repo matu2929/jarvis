@@ -36,6 +36,24 @@ test("builds the register command from the registry entry", () => {
   assert.equal(registerCommand("engram", registry.servers.engram), "claude mcp add --scope user engram -- engram mcp");
 });
 
+test("builds an http register command", () => {
+  assert.equal(
+    registerCommand("docs", { type: "http", url: "https://example.com/mcp" }),
+    "claude mcp add --scope user --transport http docs https://example.com/mcp",
+  );
+});
+
+test("treats bundled http servers as provided by the plugin, and checks others are registered", () => {
+  const httpRegistry = {
+    servers: {
+      context7: { purpose: "Docs", type: "http", url: "https://mcp.context7.com/mcp/oauth", bundled: true, agents: [] },
+      docs: { purpose: "Docs", type: "http", url: "https://example.com/mcp", install: "https://example.com", agents: [] },
+    },
+  };
+  const facts = collectFacts({ claudeDir: "/none", claudeJson: "/none.json", cwd: tmpdir(), registry: httpRegistry, which: () => false });
+  assert.deepEqual(diagnose({ ...healthy, mcp: facts.mcp }).map((p) => p.id), ["mcp-unregistered:docs"]);
+});
+
 test("formats a report that tells the agent to stop until setup is fixed", () => {
   const report = formatReport(diagnose({ ...healthy, mcp: [{ ...engram, registered: false }] }));
   assert.match(report, /jarvis-kit setup is broken/);

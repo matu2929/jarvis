@@ -62,12 +62,20 @@ When two layers seem to fit, prefer the one that costs less context and is more 
 
 MCP servers are required, never optional: a missing server must break the setup loudly.
 
-1. Add it to `core/mcp-servers.json` with `purpose`, `install` (URL), `command`, `args`, and the `agents` that need it.
-2. For each agent listed there, add `mcp__<server>__*` to its `tools`. With a `tools` allowlist an agent sees no MCP tools unless they are listed. `scripts/check.mjs` fails if an agent and the registry disagree.
+Pick the transport first. Check the server's code or docs: a "local" server that only proxies a cloud API gives no offline benefit and runs third-party code on the machine.
+
+| Transport | When | Registry fields |
+|---|---|---|
+| Remote http, bundled | The server has a hosted endpoint. Preferred: nothing to install; use OAuth when offered so no secret is stored | `type: "http"`, `url`, `bundled: true` |
+| Remote http, user-registered | Hosted, but it needs per-user config the plugin cannot carry | `type: "http"`, `url`, `install` |
+| Local stdio | It must run locally (local data, a binary) | `command`, `args`, `install` |
+
+1. Add it to `core/mcp-servers.json` with `purpose`, the transport fields above, and the `agents` that need it. A bundled server also goes in `adapters/claude/mcp.json` with the same `url`.
+2. For each agent listed there, add the server's tools to its `tools`: `mcp__<server>__*`, or `mcp__plugin_jarvis_<server>__*` for a bundled server. With a `tools` allowlist an agent sees no MCP tools unless they are listed. `scripts/check.mjs` fails if an agent, the registry, and the bundled config disagree.
 3. Skills use its tools directly. Never write "if available": the doctor already reports a missing server.
 4. Hooks that react to its tools match the full tool name (`mcp__<server>__<tool>`); a matcher with only the server name never fires.
-5. The doctor (`adapters/claude/doctor.mjs`) reads the registry, so the session-start warning and the installer check the new server without extra code.
-6. Add it to the README requirements.
+5. The doctor (`adapters/claude/doctor.mjs`) reads the registry, so the session-start warning and the installer check non-bundled servers without extra code. Bundled servers ship with the plugin.
+6. Add it to the README requirements, including any one-time sign-in (OAuth through `/mcp`).
 
 ## 4. Verify
 

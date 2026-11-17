@@ -28,7 +28,9 @@ function defaultWhich(bin) {
 }
 
 export const registerCommand = (name, server) =>
-  `claude mcp add --scope user ${name} -- ${[server.command, ...(server.args ?? [])].join(" ")}`;
+  server.type === "http"
+    ? `claude mcp add --scope user --transport http ${name} ${server.url}`
+    : `claude mcp add --scope user ${name} -- ${[server.command, ...(server.args ?? [])].join(" ")}`;
 
 function registeredServers(claudeJson, cwd) {
   const config = readJson(claudeJson);
@@ -47,8 +49,12 @@ export function collectFacts({
   const importPath = match ? match[1].replace(/\\ /g, " ") : null;
   const registered = registeredServers(claudeJson, cwd);
 
-  const mcp = Object.entries(registry.servers ?? {}).map(([name, server]) => {
+  // Bundled servers ship with the plugin, so they are present whenever this code runs from it.
+  const mcp = Object.entries(registry.servers ?? {}).filter(([, server]) => !server.bundled).map(([name, server]) => {
     const entry = registered[name];
+    if (server.type === "http") {
+      return { name, installed: true, registered: Boolean(entry), install: server.install ?? server.url, register: registerCommand(name, server) };
+    }
     // A registration with an absolute command path proves the binary even when it is not on PATH.
     const registeredBinary = typeof entry?.command === "string" && /[\\/]/.test(entry.command) && existsSync(entry.command);
     return {

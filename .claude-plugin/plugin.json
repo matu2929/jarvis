@@ -1,7 +1,7 @@
 {
   "name": "jarvis",
   "displayName": "Jarvis",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Personal engineering harness: spec-driven workflow, design patterns, code review, security audit, debugging, test planning, and safety hooks.",
   "author": {
     "name": "Matias Masco"
@@ -14,5 +14,6 @@
     "./adapters/claude/agents/code-reviewer.md",
     "./adapters/claude/agents/security-auditor.md"
   ],
-  "hooks": "./adapters/claude/hooks/hooks.json"
+  "hooks": "./adapters/claude/hooks/hooks.json",
+  "mcpServers": "./adapters/claude/mcp.json"
 }

@@ -12,6 +12,7 @@ Spec-driven, proportional to size. The spec is the contract: the implementer bui
 ## 1. Understand
 
 - Explore the relevant code before proposing anything. Follow the existing patterns of the project.
+- Check the current documentation of the libraries and frameworks involved with Context7, for the versions the project uses.
 - If a real product decision is open, ask ONE focused question and stop.
 
 ## 2. Size with the resume test

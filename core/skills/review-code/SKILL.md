@@ -31,6 +31,7 @@ Apply every lens that the change touches.
 **Readability** — what others read and depend on
 - Names that do not reveal intent; functions doing several things; dead code.
 - Inconsistency with the project's existing patterns; leaking abstractions.
+- Library or framework APIs used in a deprecated or incorrect way; confirm with Context7 before reporting.
 - Public API, messages, or docs that are unclear or out of date.
 
 **Reliability** — tests and correctness

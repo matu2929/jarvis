@@ -6,6 +6,13 @@
       "command": "engram",
       "args": ["mcp"],
       "agents": ["implementer"]
+    },
+    "context7": {
+      "purpose": "Up-to-date documentation and code examples for libraries and frameworks.",
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp/oauth",
+      "bundled": true,
+      "agents": ["implementer", "code-reviewer"]
     }
   }
 }
