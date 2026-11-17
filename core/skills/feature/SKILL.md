@@ -39,7 +39,7 @@ Rules:
 - `L1` in the log is the user's original request, verbatim.
 - If `specs/roadmap.md` exists and the change implements one of its items, fill `Roadmap:` with its ID. Once implementation starts, set that item to `in-progress` with a link to the spec. A small change (no spec) that completes a roadmap item sets it to `done` directly.
 - A requirement change appends a verbatim log entry, rewrites only the affected `S#`, and reopens only its task.
-- Large: show the spec and get explicit approval before step 4. Medium: share it and continue.
+- Large: paste the full spec file in the chat (never only its path or a summary) and get explicit approval before step 4. Medium: paste it the same way and continue.
 
 ```markdown
 # <Feature title>

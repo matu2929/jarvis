@@ -43,7 +43,7 @@ These rules apply to every question in every stage.
 
 Create `specs/` if it is missing. Each stage ends with a checkpoint:
 
-1. Show what you are about to write: a summary of at most ten lines, plus the full text of anything the AI drafted rather than the user said (ADR alternatives and consequences, for example).
+1. Show what you are about to write: the full text of the file, filled from its template, in the chat (never only its path or a summary).
 2. On approval, write the file from its template in `templates/` (relative to this skill) and set `Status: approved`.
 3. Never set `Status: approved` while an open question blocks that stage. Resolve it first, or get the user to narrow the stage so it no longer depends on it.
 
