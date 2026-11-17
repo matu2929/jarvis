@@ -20,7 +20,7 @@ test("warns the session and the user when the kit setup is incomplete", () => {
     const output = JSON.parse(result.stdout);
     assert.equal(output.hookSpecificOutput.hookEventName, "SessionStart");
     assert.match(output.hookSpecificOutput.additionalContext, /AGENTS\.md is not imported/);
-    assert.match(output.systemMessage, /jarvis-kit/);
+    assert.match(output.systemMessage, /^jarvis: setup broken/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

@@ -1,4 +1,4 @@
-// Claude Code SessionStart hook: reports a broken jarvis-kit setup (missing import or required MCP server).
+// Claude Code SessionStart hook: reports a broken jarvis setup (missing import or required MCP server).
 // Silent when everything is in place, so a healthy setup costs no context.
 import { collectFacts, diagnose, formatReport } from "../doctor.mjs";
 
@@ -12,7 +12,7 @@ async function main() {
 
   process.stdout.write(
     JSON.stringify({
-      systemMessage: `jarvis-kit: setup broken (${problems.map((p) => p.id).join(", ")}). Fix it before working; Claude will explain how.`,
+      systemMessage: `jarvis: setup broken (${problems.map((p) => p.id).join(", ")}). Fix it before working; Claude will explain how.`,
       hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: formatReport(problems) },
     }),
   );

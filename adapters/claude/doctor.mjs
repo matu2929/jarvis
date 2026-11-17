@@ -1,4 +1,4 @@
-// Checks that jarvis-kit is fully installed for Claude Code.
+// Checks that jarvis is fully installed for Claude Code.
 // The plugin can be installed on its own (e.g. `claude plugin install`), which skips scripts/install.mjs,
 // so the session-start hook and the installer both use this to report what is missing.
 // Every MCP server in core/mcp-servers.json is required: a missing one breaks the setup.
@@ -8,7 +8,7 @@ import { dirname, join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-const REPO_URL = "https://github.com/matu2929/jarvis-kit";
+const REPO_URL = "https://github.com/matu2929/jarvis";
 const REGISTRY = resolve(dirname(fileURLToPath(import.meta.url)), "../../core/mcp-servers.json");
 const AGENTS_IMPORT = /^@((?:\\ |\S)*core\/AGENTS\.md)\s*$/m;
 
@@ -81,7 +81,7 @@ export function diagnose({ importPath, importTargetExists, mcp = [] }) {
     problems.push({
       id: "instructions-broken",
       message: `The user CLAUDE.md imports ${importPath}, which does not exist (the clone was moved or deleted).`,
-      fix: "Run `node scripts/install.mjs` from the current jarvis-kit clone.",
+      fix: "Run `node scripts/install.mjs` from the current jarvis clone.",
     });
   }
   for (const server of mcp) {
@@ -106,7 +106,7 @@ export function formatReport(problems) {
   if (!problems.length) return "";
   const lines = problems.map((p) => `- ${p.message} Fix: ${p.fix}`);
   return (
-    "jarvis-kit setup is broken. Before anything else, tell the user what is missing and how to fix it, " +
+    "jarvis setup is broken. Before anything else, tell the user what is missing and how to fix it, " +
     "and do not start the requested task until it is fixed or the user explicitly says to continue without it:\n" +
     lines.join("\n")
   );

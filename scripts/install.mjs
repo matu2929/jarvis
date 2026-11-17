@@ -1,4 +1,4 @@
-// Installs jarvis-kit for Claude Code:
+// Installs jarvis for Claude Code:
 //   1. Imports core/AGENTS.md from the user-level CLAUDE.md (plugins cannot load always-on instructions).
 //   2. Registers this repo as a plugin marketplace and installs the `jarvis` plugin.
 //   3. Checks requirements: git, and the doctor checks (instructions import, every required MCP server in
@@ -13,11 +13,12 @@ import { fileURLToPath } from "node:url";
 import { collectFacts, diagnose } from "../adapters/claude/doctor.mjs";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const MARKETPLACE = "jarvis-kit";
-const PLUGIN = "jarvis@jarvis-kit";
-const START = "<!-- jarvis-kit:start -->";
-const END = "<!-- jarvis-kit:end -->";
-const BLOCK = new RegExp(`${START}[\\s\\S]*?${END}\\r?\\n?`);
+const MARKETPLACE = "jarvis";
+const PLUGIN = "jarvis@jarvis";
+const START = "<!-- jarvis:start -->";
+const END = "<!-- jarvis:end -->";
+// Also matches the block written before the repo was renamed from jarvis-kit, so reinstalling replaces it.
+const BLOCK = /<!-- jarvis(?:-kit)?:start -->[\s\S]*?<!-- jarvis(?:-kit)?:end -->\r?\n?/;
 
 function parseArgs(argv) {
   const options = { uninstall: false, dryRun: false, skipPlugin: false, claudeDir: join(homedir(), ".claude") };

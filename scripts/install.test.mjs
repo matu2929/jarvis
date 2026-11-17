@@ -15,7 +15,13 @@ test("import line uses forward slashes and escapes spaces", () => {
 
 test("adds the block above existing content and keeps it", () => {
   const result = withInstructions("## My notes\n", "/kit/core/AGENTS.md");
-  assert.match(result, /^<!-- jarvis-kit:start -->\n@\/kit\/core\/AGENTS\.md\n<!-- jarvis-kit:end -->\n\n## My notes\n$/);
+  assert.match(result, /^<!-- jarvis:start -->\n@\/kit\/core\/AGENTS\.md\n<!-- jarvis:end -->\n\n## My notes\n$/);
+});
+
+test("replaces a block written under the old jarvis-kit markers", () => {
+  const legacy = "<!-- jarvis-kit:start -->\n@/old/AGENTS.md\n<!-- jarvis-kit:end -->\n\n## My notes\n";
+  assert.equal(withInstructions(legacy, "/kit/core/AGENTS.md"), withInstructions("## My notes\n", "/kit/core/AGENTS.md"));
+  assert.equal(withoutInstructions(legacy), "## My notes\n");
 });
 
 test("is idempotent and replaces an outdated block", () => {

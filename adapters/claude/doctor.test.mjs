@@ -56,7 +56,7 @@ test("treats bundled http servers as provided by the plugin, and checks others a
 
 test("formats a report that tells the agent to stop until setup is fixed", () => {
   const report = formatReport(diagnose({ ...healthy, mcp: [{ ...engram, registered: false }] }));
-  assert.match(report, /jarvis-kit setup is broken/);
+  assert.match(report, /jarvis setup is broken/);
   assert.match(report, /do not start the requested task/);
   assert.match(report, /claude mcp add/);
 });
@@ -70,7 +70,7 @@ test("collects facts from the Claude config files and the registry", () => {
     const claudeDir = join(dir, ".claude");
     mkdirSync(claudeDir);
     const agentsImport = `@${join(kit, "AGENTS.md").replace(/\\/g, "/").replace(/ /g, "\\ ")}`;
-    writeFileSync(join(claudeDir, "CLAUDE.md"), `<!-- jarvis-kit:start -->\n${agentsImport}\n<!-- jarvis-kit:end -->\n`);
+    writeFileSync(join(claudeDir, "CLAUDE.md"), `<!-- jarvis:start -->\n${agentsImport}\n<!-- jarvis:end -->\n`);
     const claudeJson = join(dir, ".claude.json");
     writeFileSync(claudeJson, JSON.stringify({ mcpServers: { engram: { command: "engram", args: ["mcp"] } } }));
 

@@ -1,4 +1,4 @@
-# jarvis-kit
+# jarvis
 
 Personal engineering harness for AI coding agents. Claude Code first, portable by design.
 
@@ -53,8 +53,8 @@ node scripts/install.mjs
 
 The installer:
 
-1. Adds an import of `core/AGENTS.md` at the top of `~/.claude/CLAUDE.md`, inside a `jarvis-kit` marker block. Plugins cannot load always-on instructions, so this step is separate.
-2. Registers this repository as the `jarvis-kit` marketplace and installs the `jarvis` plugin.
+1. Adds an import of `core/AGENTS.md` at the top of `~/.claude/CLAUDE.md`, inside a `jarvis` marker block. Plugins cannot load always-on instructions, so this step is separate.
+2. Registers this repository as the `jarvis` marketplace and installs the `jarvis` plugin.
 3. Checks git and runs the doctor: is `AGENTS.md` imported, is every required MCP server installed and registered. It exits with code 1 when something is missing.
 
 A `SessionStart` hook runs the same doctor at the start of each new session, so a partial install (for example, only the plugin) is reported too: the agent tells you what is missing and how to fix it, and does not start working until it is fixed or you explicitly say to continue. When everything is in place it stays silent and adds nothing to the context.

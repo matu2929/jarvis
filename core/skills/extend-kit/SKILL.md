@@ -1,13 +1,13 @@
 ---
 name: extend-kit
-description: Decide whether and how to extend jarvis-kit - choose the right layer (skill, hook, agent, AGENTS.md rule, or MCP server) and add it following the kit's conventions, tests and checks. Use when the user wants to add, change, or remove a skill, hook, agent, rule, or MCP server in the kit, or asks whether something is worth adding.
+description: Decide whether and how to extend jarvis - choose the right layer (skill, hook, agent, AGENTS.md rule, or MCP server) and add it following the kit's conventions, tests and checks. Use when the user wants to add, change, or remove a skill, hook, agent, rule, or MCP server in the kit, or asks whether something is worth adding.
 metadata:
   kit: jarvis
 ---
 
 # Extend the kit
 
-Work inside the jarvis-kit repository. Read `README.md` first for the current contents and layout.
+Work inside the jarvis repository. Read `README.md` first for the current contents and layout.
 
 ## 1. Should it exist?
 
