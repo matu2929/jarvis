@@ -1,0 +1,14 @@
+{
+  "name": "jarvis-kit",
+  "description": "Marketplace for the Jarvis personal engineering harness.",
+  "owner": {
+    "name": "Matias Masco"
+  },
+  "plugins": [
+    {
+      "name": "jarvis",
+      "source": "./",
+      "description": "Spec-driven workflow, design patterns, code review, security audit, debugging, test planning, and safety hooks."
+    }
+  ]
+}

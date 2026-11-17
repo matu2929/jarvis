@@ -1,0 +1,18 @@
+{
+  "name": "jarvis",
+  "displayName": "Jarvis",
+  "version": "0.1.0",
+  "description": "Personal engineering harness: spec-driven workflow, design patterns, code review, security audit, debugging, test planning, and safety hooks.",
+  "author": {
+    "name": "Matias Masco"
+  },
+  "license": "MIT",
+  "keywords": ["workflow", "sdd", "review", "security", "testing"],
+  "skills": ["./core/skills/"],
+  "agents": [
+    "./adapters/claude/agents/implementer.md",
+    "./adapters/claude/agents/code-reviewer.md",
+    "./adapters/claude/agents/security-auditor.md"
+  ],
+  "hooks": "./adapters/claude/hooks/hooks.json"
+}
