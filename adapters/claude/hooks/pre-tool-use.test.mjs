@@ -43,6 +43,12 @@ test("blocks a non-conventional commit message", () => {
   assert.match(result.stderr, /Conventional Commits/);
 });
 
+test("lints the -m message, not an unrelated heredoc in the same command", () => {
+  const command =
+    "cat >> specs/x.md <<'EOF'\n- L5 (done): some log line\nEOF\ngit add specs/x.md && git commit -q -m \"docs(specs): close spec\"";
+  assert.equal(run("Bash", { command }).status, 0);
+});
+
 test("blocks committing a staged secret and allows a clean one", () => {
   writeFileSync(join(repo, "config.js"), `const t = "ghp_${"a".repeat(36)}";\n`);
   git("add", "config.js");

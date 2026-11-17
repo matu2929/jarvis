@@ -17,14 +17,20 @@ export function commitStagesAll(command) {
   return /(^|\s)(--all|-[a-zA-Z]*a[a-zA-Z]*)(?=\s|$)/.test(args.replace(/"[^"]*"|'[^']*'/g, ""));
 }
 
+// A heredoc feeds the commit only when its `<<` sits in the commit command itself:
+// on the same line and not after a separator that starts another command.
+const feedsCommit = (beforeHeredoc) =>
+  !/[\n;&|]/.test(beforeHeredoc.replace(/"[^"]*"|'[^']*'/g, "").replace(/["'].*$/, ""));
+
 // Returns the commit message, or null when it cannot be determined statically
 // (editor, -F file, or variables / command substitution other than a heredoc).
 export function extractCommitMessage(command) {
-  const cmd = String(command ?? "");
-  if (!isGitCommit(cmd)) return null;
+  const commit = GIT_COMMIT.exec(String(command ?? ""));
+  if (!commit) return null;
+  const cmd = String(command).slice(commit.index + commit[1].length);
 
   const heredoc = HEREDOC.exec(cmd);
-  if (heredoc) return heredoc[3].trim();
+  if (heredoc && feedsCommit(cmd.slice(0, heredoc.index))) return heredoc[3].trim();
 
   const parts = [];
   for (const match of cmd.matchAll(MESSAGE_ARG)) {
